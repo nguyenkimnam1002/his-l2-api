@@ -1,0 +1,15 @@
+{
+  "name": "his-l2-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cổng chia sẻ API dữ liệu HIS qua ctl_sql",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

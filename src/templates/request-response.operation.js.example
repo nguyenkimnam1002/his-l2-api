@@ -1,0 +1,29 @@
+const { AppError } = require('../shared/app-error');
+
+const definition = {
+  id: 'ten-api',
+  name: 'Tên API',
+  summary: 'Mô tả ngắn.',
+  type: 'Dữ liệu HIS',
+  status: 'Đang hoạt động',
+  version: 'v1',
+  protocol: 'REST',
+  auth: 'API Key',
+  trigger: { type: 'http', method: 'POST', path: '/api/v1/ten-api' },
+  execution: { type: 'his-ctl-sql', ctlSql: 'SQL_ID_NOI_BO', namedColumns: true },
+  delivery: { type: 'http-response' },
+  fields: [{ name: 'thamSo', type: 'string', required: true, description: 'Mô tả.' }],
+  sampleBody: { thamSo: 'gia-tri-mau' }
+};
+
+async function execute({ body, hisClient }) {
+  const value = String(body.thamSo ?? '').trim();
+  if (!value) throw new AppError('INVALID_INPUT', 'Thiếu thamSo', 400);
+  const data = await hisClient.executeCtlSqlO(
+    definition.execution.ctlSql,
+    [{ name: '[0]', value }]
+  );
+  return { data, meta: { count: data.length } };
+}
+
+module.exports = { definition, execute };

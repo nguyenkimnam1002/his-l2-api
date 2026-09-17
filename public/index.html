@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HIS L2 API</title>
+    <link rel="icon" type="image/svg+xml" href="/icons/document_blue.svg">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header>
+      <a href="/">
+        <img src="/icons/document_blue.svg" alt="">
+        HIS L2 API
+      </a>
+      <span id="gateway-status">Đang kiểm tra...</span>
+      <button id="connect-his" hidden>Đăng nhập HIS</button>
+      <button id="logout-his" hidden>Đăng xuất</button>
+    </header>
+
+    <main>
+      <section class="listing">
+        <h1>
+          <img
+            class="page-icon"
+            src="/icons/document_dark.svg"
+            alt="Page icon"
+          >
+          Danh sách API HIS_L2 VPC
+        </h1>
+
+        <div class="tools">
+          <span class="view-chip">
+            <span aria-hidden="true">▦</span>
+            Table
+          </span>
+          <div class="table-actions">
+            <button id="filter-api" class="tool-button" type="button" title="Lọc API" aria-label="Lọc API">
+              <span aria-hidden="true">≡</span>
+            </button>
+            <button id="sort-api" class="tool-button" type="button" title="Sắp xếp theo tên" aria-label="Sắp xếp theo tên">
+              <span aria-hidden="true">⇅</span>
+            </button>
+            <button id="toggle-search" class="tool-button" type="button" title="Tìm API" aria-label="Tìm API">
+              <span aria-hidden="true">⌕</span>
+            </button>
+            <input id="search" class="search-input" type="search" placeholder="Tìm API..." aria-label="Tìm API" hidden>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th><span class="column-icon">Aa</span> API Name</th>
+                <th><span class="column-icon">◉</span> Type</th>
+                <th><span class="column-icon">◌</span> Status</th>
+                <th><span class="column-icon">≡</span> Version</th>
+                <th><span class="column-icon">◉</span> Protocol</th>
+                <th><span class="column-icon">◉</span> Auth Method</th>
+                <th><span class="column-icon">⌁</span> API Key</th>
+                <th><span class="column-icon">⌁</span> Base URL</th>
+              </tr>
+            </thead>
+            <tbody id="api-list"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside id="api-detail" class="detail hidden"></aside>
+    </main>
+
+    <dialog id="login-dialog">
+      <form id="his-login-form">
+        <div class="dialog-head">
+          <h2>Đăng nhập HIS</h2>
+          <button type="button" id="close-dialog" aria-label="Đóng">×</button>
+        </div>
+
+        <label>
+          Tên đăng nhập
+          <input name="username" autocomplete="username" required>
+        </label>
+
+        <label>
+          Mật khẩu
+          <input
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          >
+        </label>
+
+        <p id="login-error" class="error"></p>
+        <button type="submit" class="primary">Đăng nhập</button>
+      </form>
+    </dialog>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

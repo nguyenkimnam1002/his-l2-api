@@ -1,0 +1,22 @@
+const definition = {
+  id: 'dong-bo-tiep-don',
+  name: 'Đồng bộ tiếp đón',
+  type: 'Đồng bộ HIS',
+  status: 'Đang hoạt động',
+  version: 'v1',
+  protocol: 'REST',
+  auth: 'Server to server',
+  trigger: { type: 'schedule', cron: '0 1 * * *', timezone: 'Asia/Bangkok' },
+  execution: { type: 'his-ctl-sql', ctlSql: 'API_DS_TIEP_DON', namedColumns: true },
+  delivery: { type: 'rest-push', target: 'dashboard-tiep-don' }
+};
+
+async function execute({ hisClient, window }) {
+  const data = await hisClient.executeCtlSqlO(definition.execution.ctlSql, [
+    { name: '[0]', value: window.from },
+    { name: '[1]', value: window.to }
+  ]);
+  return { data };
+}
+
+module.exports = { definition, execute };
