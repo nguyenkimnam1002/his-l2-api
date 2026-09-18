@@ -1,7 +1,8 @@
 const pto01 = require('../modules/pto-01');
 const khamBenhNgay = require('../modules/kham-benh-ngay');
+const danhMucDichVu = require('../modules/danh-muc-dich-vu');
 
-const operations = [pto01, khamBenhNgay];
+const operations = [pto01, khamBenhNgay, danhMucDichVu];
 
 function validateRegistry(items) {
   const ids = new Set();

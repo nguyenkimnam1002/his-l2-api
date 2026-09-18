@@ -5,9 +5,10 @@ const { createApp } = require('../src/app');
 const { HisError } = require('../src/his-client');
 const { getApiById } = require('../src/catalog');
 
-test('hai API hien tai deu dang hoat dong', () => {
+test('các API hiện tại đều đang hoạt động', () => {
   assert.equal(getApiById('pto-01').status, 'Đang hoạt động');
   assert.equal(getApiById('kham-benh-ngay').status, 'Đang hoạt động');
+  assert.equal(getApiById('danh-muc-dich-vu').status, 'Đang hoạt động');
 });
 
 async function withServer(handler, callback) {

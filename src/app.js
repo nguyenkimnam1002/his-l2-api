@@ -107,6 +107,25 @@ function createApp({ config, hisClient }) {
         return json(res, 200, result);
       }
 
+      const operationAtPath = operations.find(({ definition }) => (
+        definition.trigger?.type === 'http'
+        && definition.trigger.path === url.pathname
+      ));
+      if (operationAtPath) {
+        return json(res, 405, {
+          error: {
+            code: 'METHOD_NOT_ALLOWED',
+            message: `Endpoint này chỉ hỗ trợ ${operationAtPath.definition.trigger.method}`
+          }
+        });
+      }
+
+      if (url.pathname.startsWith('/api/')) {
+        return json(res, 404, {
+          error: { code: 'NOT_FOUND', message: 'Không tìm thấy endpoint' }
+        });
+      }
+
       if (req.method === 'GET' && (url.pathname === '/' || !path.extname(url.pathname))) {
         const index = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'));
         res.writeHead(200, { 'content-type': MIME['.html'] });
