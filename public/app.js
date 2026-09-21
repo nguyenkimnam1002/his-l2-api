@@ -26,8 +26,9 @@ function renderList() {
 function renderDetail(api) {
   state.selected = api; renderList(); detail.classList.remove('hidden');
   const key = state.apiKey || '<API_KEY_DUOC_CAP>'; const connectionId = state.connectionId || '<HIS_CONNECTION_ID>';
+  const connectionHeader = api.id === 'his-connection' ? '' : `\nX-HIS-Connection-Id: ${esc(connectionId)}`;
   const test = state.localAdmin ? `<h3>Run API</h3><div id="test-fields">${api.fields.map((f) => `<label>${esc(f.name)} <input data-field="${esc(f.name)}" value="${esc(api.sampleBody[f.name] ?? '')}" placeholder="${esc(f.description)}"></label>`).join('')}</div><button class="action" id="send-request">Gửi</button><pre class="response" id="response">Chưa gửi.</pre>` : '';
-  detail.innerHTML = `<button class="close" id="close-detail">×</button><h2>${esc(api.name)}</h2><h3>Endpoint</h3><pre>${esc(api.method)} ${esc(location.origin + api.path)}</pre><h3>Postman</h3><pre id="snippet">${esc(api.method)} ${esc(location.origin + api.path)}\nX-API-Key: ${esc(key)}\nX-HIS-Connection-Id: ${esc(connectionId)}\nContent-Type: application/json\n\n${esc(JSON.stringify(api.sampleBody, null, 2))}</pre><div class="actions"><button class="action" id="copy">Copy mẫu</button><button class="action" id="download-postman">Tải collection</button></div>${test}`;
+  detail.innerHTML = `<button class="close" id="close-detail">×</button><h2>${esc(api.name)}</h2><h3>Endpoint</h3><pre>${esc(api.method)} ${esc(location.origin + api.path)}</pre><h3>Postman</h3><pre id="snippet">${esc(api.method)} ${esc(location.origin + api.path)}\nX-API-Key: ${esc(key)}${connectionHeader}\nContent-Type: application/json\n\n${esc(JSON.stringify(api.sampleBody, null, 2))}</pre><div class="actions"><button class="action" id="copy">Copy mẫu</button><button class="action" id="download-postman">Tải collection</button></div>${test}`;
   document.querySelector('#close-detail').onclick = () => { state.selected = null; detail.classList.add('hidden'); renderList(); };
   document.querySelector('#copy').onclick = async (e) => { await navigator.clipboard.writeText(document.querySelector('#snippet').innerText); e.currentTarget.textContent = 'Đã copy'; };
   document.querySelector('#download-postman').onclick = () => downloadPostman(api);
@@ -35,7 +36,10 @@ function renderDetail(api) {
 }
 
 function downloadPostman(api) {
-  const collection = { info: { name: `HIS L2 API - ${api.name}`, schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' }, item: [{ name: api.name, request: { method: api.method, header: [{ key: 'X-API-Key', value: state.apiKey || '<API_KEY_DUOC_CAP>' }, { key: 'X-HIS-Connection-Id', value: state.connectionId || '<HIS_CONNECTION_ID>' }, { key: 'Content-Type', value: 'application/json' }], body: { mode: 'raw', raw: JSON.stringify(api.sampleBody, null, 2), options: { raw: { language: 'json' } } }, url: location.origin + api.path } }] };
+  const headers = [{ key: 'X-API-Key', value: state.apiKey || '<API_KEY_DUOC_CAP>' }];
+  if (api.id !== 'his-connection') headers.push({ key: 'X-HIS-Connection-Id', value: state.connectionId || '<HIS_CONNECTION_ID>' });
+  headers.push({ key: 'Content-Type', value: 'application/json' });
+  const collection = { info: { name: `HIS L2 API - ${api.name}`, schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' }, item: [{ name: api.name, request: { method: api.method, header: headers, body: { mode: 'raw', raw: JSON.stringify(api.sampleBody, null, 2), options: { raw: { language: 'json' } } }, url: location.origin + api.path } }] };
   const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([JSON.stringify(collection, null, 2)], { type: 'application/json' })); link.download = `his-l2-${api.id}-postman.json`; link.click(); URL.revokeObjectURL(link.href);
 }
 

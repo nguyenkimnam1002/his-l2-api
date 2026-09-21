@@ -8,6 +8,24 @@ const { parseReportDate } = require('./shared/date');
 
 const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml' };
+const CONNECTION_API = {
+  id: 'his-connection',
+  name: 'Tạo kết nối HIS',
+  summary: 'Đăng nhập HIS và cấp connectionId tạm thời để gọi các API dữ liệu.',
+  method: 'POST',
+  path: '/api/v1/connections',
+  type: 'Kết nối HIS',
+  status: 'Đang hoạt động',
+  version: 'v1',
+  protocol: 'REST',
+  auth: 'API Key',
+  fields: [
+    { name: 'domain', type: 'string', required: true, description: 'Domain bệnh viện, không gồm https://' },
+    { name: 'username', type: 'string', required: true, description: 'Tài khoản HIS' },
+    { name: 'password', type: 'string', required: true, description: 'Mật khẩu HIS' }
+  ],
+  sampleBody: { domain: 'benhvienphucyen.vncare.vn', username: '<TAI_KHOAN_HIS>', password: '<MAT_KHAU_HIS>' }
+};
 const SECURITY_HEADERS = { 'x-content-type-options': 'nosniff', 'x-frame-options': 'DENY', 'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" };
 function json(res, status, body) { res.writeHead(status, { ...SECURITY_HEADERS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); }
 async function readJson(req) {
@@ -44,7 +62,7 @@ function createApp({ config, connectionManager, connectionRateLimiter, hisClient
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     try {
       if (req.method === 'GET' && url.pathname === '/api/health') { const body = { ok: true, timestamp: new Date().toISOString() }; if (config.localAdminEnabled !== false) body.activeConnections = connectionManager.count(); return json(res, 200, body); }
-      if (req.method === 'GET' && url.pathname === '/api/catalog') return json(res, 200, { data: operations.filter(({ definition }) => definition.trigger?.type === 'http').map(toPublicApi) });
+      if (req.method === 'GET' && url.pathname === '/api/catalog') return json(res, 200, { data: [CONNECTION_API, ...operations.filter(({ definition }) => definition.trigger?.type === 'http').map(toPublicApi)] });
       if (req.method === 'GET' && url.pathname === '/api/admin/api-key') {
         if (config.localAdminEnabled === false) return json(res, 404, { error: { code: 'NOT_FOUND', message: 'Không tìm thấy endpoint' } });
         if (!isLocalAdmin(req)) return json(res, 403, { error: { code: 'LOCAL_ONLY', message: 'Chỉ dùng trong giao diện quản trị local' } });
