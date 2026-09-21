@@ -54,3 +54,9 @@ Không đặt URL thật, tài khoản hoặc API Key đối tác trong module, 
 - Có idempotency/batch key nếu push có thể retry.
 - Log không chứa API Key hoặc dữ liệu bệnh án đầy đủ.
 - Test chạy thành công trước khi merge.
+# Quy ước tên ctl_sql
+
+- Tên SQL ID không được vượt quá 20 ký tự.
+- Không dùng tiền tố `API_`.
+- Dùng hậu tố `_VPC` để nhận biết ctl_sql của dự án này.
+- Ví dụ: `NGT002_DSBN_TN_VPC`.

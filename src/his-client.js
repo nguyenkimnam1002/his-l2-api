@@ -36,9 +36,19 @@ function parseLoginResponse(text) {
     throw new HisError(envelope?.error_msg || 'Đăng nhập HIS thất bại', 502, envelope);
   }
 
-  const user = parsePossibleJson(envelope.result);
+  const parsedResult = parsePossibleJson(envelope.result);
+  const user = Array.isArray(parsedResult)
+    ? parsedResult[0]
+    : (parsedResult?.data && !parsedResult.UUID && !parsedResult.uuid
+      ? (Array.isArray(parsedResult.data) ? parsedResult.data[0] : parsedResult.data)
+      : parsedResult);
   const uuid = user?.UUID || user?.uuid || user?.TOKEN || user?.token;
-  if (!uuid) throw new HisError('HIS không trả về UUID phiên đăng nhập', 502);
+  if (!uuid) {
+    throw new HisError(
+      'Tài khoản hoặc mật khẩu không đúng, hoặc tài khoản không thuộc hệ thống HIS đang kết nối',
+      401
+    );
+  }
   return { uuid: String(uuid), user };
 }
 

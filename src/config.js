@@ -26,14 +26,22 @@ function loadConfig() {
     localAdminEnabled: environment !== 'production',
     hospitalUrl: process.env.HIS_REST_SERVICE_URL
       || fileConfig.hospitalUrl
-      || 'https://bvvinhphuc.vncare.vn/vnpthis/RestService',
+      || 'https://benhvienphucyen.vncare.vn/vnpthis/RestService',
     apiKeys,
     requestTimeoutMs: Number(process.env.HIS_REQUEST_TIMEOUT_MS || fileConfig.requestTimeoutMs || 30000),
     rejectUnauthorized: process.env.HIS_TLS_VERIFY
       ? process.env.HIS_TLS_VERIFY !== 'false'
       : fileConfig.rejectUnauthorized ?? environment === 'production',
     hisUsername: process.env.HIS_USERNAME || '',
-    hisPassword: process.env.HIS_PASSWORD || ''
+    hisPassword: process.env.HIS_PASSWORD || '',
+    connectionTtlMs: Number(process.env.HIS_CONNECTION_TTL_MS || fileConfig.connectionTtlMs || 8 * 60 * 60 * 1000),
+    connectionIdleMs: Number(process.env.HIS_CONNECTION_IDLE_MS || fileConfig.connectionIdleMs || 2 * 60 * 60 * 1000),
+    connectionMaxAttempts: Number(process.env.HIS_CONNECTION_MAX_ATTEMPTS || fileConfig.connectionMaxAttempts || 5),
+    connectionRateWindowMs: Number(process.env.HIS_CONNECTION_RATE_WINDOW_MS || fileConfig.connectionRateWindowMs || 60 * 1000),
+    connectionBlockMs: Number(process.env.HIS_CONNECTION_BLOCK_MS || fileConfig.connectionBlockMs || 15 * 60 * 1000),
+    allowedDomainSuffixes: process.env.HIS_ALLOWED_DOMAIN_SUFFIXES
+      ? process.env.HIS_ALLOWED_DOMAIN_SUFFIXES.split(',').map((value) => value.trim().toLowerCase()).filter(Boolean)
+      : fileConfig.allowedDomainSuffixes || ['.vncare.vn']
   };
 }
 

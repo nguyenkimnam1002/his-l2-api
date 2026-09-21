@@ -1,8 +1,12 @@
 const pto01 = require('../modules/pto-01');
 const khamBenhNgay = require('../modules/kham-benh-ngay');
 const danhMucDichVu = require('../modules/danh-muc-dich-vu');
+const danhMucKhoa = require('../modules/danh-muc-khoa');
+const danhMucPhong = require('../modules/danh-muc-phong');
+const benhNhanTiepDonNgay = require('../modules/benh-nhan-tiep-don-ngay');
+const dichVuChiDinh = require('../modules/dich-vu-chi-dinh');
 
-const operations = [pto01, khamBenhNgay, danhMucDichVu];
+const operations = [pto01, khamBenhNgay, benhNhanTiepDonNgay, dichVuChiDinh, danhMucDichVu, danhMucKhoa, danhMucPhong];
 
 function validateRegistry(items) {
   const ids = new Set();

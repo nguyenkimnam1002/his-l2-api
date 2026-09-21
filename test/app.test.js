@@ -9,6 +9,8 @@ test('các API hiện tại đều đang hoạt động', () => {
   assert.equal(getApiById('pto-01').status, 'Đang hoạt động');
   assert.equal(getApiById('kham-benh-ngay').status, 'Đang hoạt động');
   assert.equal(getApiById('danh-muc-dich-vu').status, 'Đang hoạt động');
+  assert.equal(getApiById('danh-muc-khoa').status, 'Đang hoạt động');
+  assert.equal(getApiById('danh-muc-phong').status, 'Đang hoạt động');
 });
 
 async function withServer(handler, callback) {
@@ -36,7 +38,6 @@ test('API key được đọc ở catalog local, đăng nhập HIS không cần 
     session: null,
     logout() { this.session = null; },
     async login(username) { this.session = { uuid: 'uuid', user: { USER_NAME: username } }; return this.session; },
-    async executeCtlSql() { return []; },
     rememberCredentials(username) { remembered = username; }
   };
   await withServer(createApp({ config: { apiKeys: ['partner-key'] }, hisClient }), async (base) => {
