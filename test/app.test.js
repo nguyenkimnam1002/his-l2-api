@@ -7,7 +7,6 @@ const { getApiById } = require('../src/catalog');
 
 test('các API hiện tại đều đang hoạt động', () => {
   assert.equal(getApiById('pto-01').status, 'Đang hoạt động');
-  assert.equal(getApiById('kham-benh-ngay').status, 'Đang hoạt động');
   assert.equal(getApiById('danh-muc-dich-vu').status, 'Đang hoạt động');
   assert.equal(getApiById('danh-muc-khoa').status, 'Đang hoạt động');
   assert.equal(getApiById('danh-muc-phong').status, 'Đang hoạt động');
@@ -63,17 +62,15 @@ test('production an endpoint quan tri va thong tin phien HIS', async () => {
   });
 });
 
-test('báo cáo khám bệnh chỉ nhận hai ngày và map [0], [1]', async () => {
-  let call;
-  const hisClient = { session: { uuid: 'uuid' }, executeCtlSqlO: async (...args) => { call = args; return [{ MABENHNHAN: 'BN01' }]; } };
+test('API báo cáo theo khoảng ngày đã được gỡ khỏi catalog và route công khai', async () => {
+  const hisClient = { session: { uuid: 'uuid' } };
   await withServer(createApp({ config: { apiKeys: ['key'] }, hisClient }), async (base) => {
     const url = `${base}/api/v1/reports/kham-benh-ngay`;
     const headers = { 'content-type': 'application/json', 'x-api-key': 'key' };
-    const invalid = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ tuNgay: '31/02/2026', denNgay: '15/09/2026' }) });
-    assert.equal(invalid.status, 400);
-    const valid = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ tuNgay: '15/09/2026', denNgay: '15/09/2026' }) });
-    assert.equal(valid.status, 200);
-    assert.deepEqual(call, [getApiById('kham-benh-ngay').ctlSql, [{ name: '[0]', value: '15/09/2026' }, { name: '[1]', value: '15/09/2026' }]]);
+    const response = await fetch(url, { method: 'POST', headers, body: '{}' });
+    assert.equal(response.status, 404);
+    const catalog = await fetch(`${base}/api/catalog`).then((result) => result.json());
+    assert.ok(!catalog.data.some((api) => api.id === 'kham-benh-ngay'));
   });
 });
 

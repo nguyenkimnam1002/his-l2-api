@@ -4,12 +4,12 @@ const { operations, findHttpOperation, toPublicApi, validateRegistry } = require
 const { RestPushClient } = require('../src/integrations/outbound/rest-push-client');
 
 test('registry tim route HTTP va catalog khong lo cau hinh noi bo', () => {
-  const operation = findHttpOperation('POST', '/api/v1/reports/kham-benh-ngay');
-  assert.equal(operation.definition.id, 'kham-benh-ngay');
+  const operation = findHttpOperation('POST', '/api/v1/reports/benh-nhan-tiep-don-ngay');
+  assert.equal(operation.definition.id, 'benh-nhan-tiep-don-ngay');
   const publicApi = toPublicApi(operation);
-  assert.equal(publicApi.path, '/api/v1/reports/kham-benh-ngay');
+  assert.equal(publicApi.path, '/api/v1/reports/benh-nhan-tiep-don-ngay');
   assert.ok(!Object.hasOwn(publicApi, 'execution'));
-  assert.ok(!JSON.stringify(publicApi).includes('API_DS_KBH_NGAY'));
+  assert.ok(!JSON.stringify(publicApi).includes('NGT002_DSBN_TN_VPC'));
 });
 
 test('registry chan trung id va route', () => {

@@ -7,7 +7,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "frontend:install": "npm --prefix frontend install",
+    "frontend:dev": "npm --prefix frontend start",
+    "frontend:build": "npm --prefix frontend run build",
+    "build": "npm run frontend:build"
   },
   "engines": {
     "node": ">=18"
