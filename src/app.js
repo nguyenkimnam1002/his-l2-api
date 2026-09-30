@@ -7,6 +7,7 @@ const { AppError } = require('./shared/app-error');
 const { parseReportDate } = require('./shared/date');
 
 const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
+const KSK_T18_TEMPLATE = path.resolve(__dirname, '..', 'ctl_sql', 'sqlgoc', 'Import_KSK_Tren 18.xlsm');
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml' };
 const CONNECTION_API = {
   id: 'his-connection',
@@ -95,6 +96,11 @@ function createApp({ config, connectionManager, connectionRateLimiter, hisClient
       const operationAtPath = operations.find(({ definition }) => definition.trigger?.type === 'http' && definition.trigger.path === url.pathname);
       if (operationAtPath) return json(res, 405, { error: { code: 'METHOD_NOT_ALLOWED', message: `Endpoint này chỉ hỗ trợ ${operationAtPath.definition.trigger.method}` } });
       if (url.pathname.startsWith('/api/')) return json(res, 404, { error: { code: 'NOT_FOUND', message: 'Không tìm thấy endpoint' } });
+      if (req.method === 'GET' && url.pathname === '/assets/templates/Import_KSK_Tren%2018.xlsm') {
+        if (!fs.existsSync(KSK_T18_TEMPLATE)) return json(res, 404, { error: { code: 'TEMPLATE_NOT_FOUND', message: 'Khong tim thay file mau Excel' } });
+        res.writeHead(200, { ...SECURITY_HEADERS, 'content-type': 'application/vnd.ms-excel.sheet.macroEnabled.12', 'content-length': fs.statSync(KSK_T18_TEMPLATE).size, 'cache-control': 'no-cache' });
+        return fs.createReadStream(KSK_T18_TEMPLATE).pipe(res);
+      }
       if (req.method === 'GET' && (url.pathname === '/' || !path.extname(url.pathname))) { const index = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html')); res.writeHead(200, { ...SECURITY_HEADERS, 'content-type': MIME['.html'], 'cache-control': 'no-store' }); return res.end(index); }
       if (req.method === 'GET') {
         const safePath = path.normalize(url.pathname).replace(/^(\.\.[/\\])+/, '').replace(/^[/\\]+/, ''); const filePath = path.join(PUBLIC_DIR, safePath);

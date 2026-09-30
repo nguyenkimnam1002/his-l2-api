@@ -7,6 +7,8 @@
    <div class="children" *ngIf="groups['tongquan']"><button [class.active]="page==='dashboard'" (click)="nav('dashboard')">‹ Trang chủ điều hành</button></div>
    <button class="group" (click)="toggleGroup('tichhop')"><span>●</span>Tích hợp dữ liệu<i>{{groups['tichhop']?'⌄':'›'}}</i></button>
    <div class="children" *ngIf="groups['tichhop']"><button [class.active]="page==='apis'" (click)="nav('apis')">‹ Danh sách API</button><button disabled>‹ Tác vụ định kỳ</button><button disabled>‹ Lịch sử đồng bộ</button></div>
+   <button class="group" (click)="toggleGroup('baocao')"><span>●</span>Báo cáo động<i>{{groups['baocao']?'⌄':'›'}}</i></button>
+   <div class="children report-menu" *ngIf="groups['baocao']"><button *ngFor="let report of reportApis" [class.active]="page==='reports'&&selectedReport?.id===report.id" (click)="openReport(report)">‹ {{report.name}}</button></div>
    <button class="group" (click)="toggleGroup('hethong')"><span>●</span>Hệ thống<i>{{groups['hethong']?'⌄':'›'}}</i></button>
    <div class="children" *ngIf="groups['hethong']"><button disabled>‹ Quản lý người dùng</button><button disabled>‹ Cấu hình hệ thống</button></div>
   </nav>
@@ -47,8 +49,32 @@
      <div class="table-scroll"><table class="data-table api-table"><thead><tr><th>STT</th><th>Tên API</th><th>Phân loại</th><th>Method</th><th>Trạng thái</th><th>Phiên bản</th><th>Xác thực</th><th>Thao tác</th></tr></thead><tbody><tr *ngFor="let api of filteredApis;index as i" (dblclick)="runApi(api)"><td>{{i+1}}</td><td><a (click)="runApi(api)">{{api.name}}</a><small>{{api.path}}</small></td><td>{{api.type}}</td><td><span class="method">{{api.method}}</span></td><td><span class="tag">{{api.status}}</span></td><td>{{api.version}}</td><td>{{api.auth}}</td><td><button class="link-button" (click)="runApi(api)">Chi tiết</button></td></tr></tbody><tfoot><tr><td colspan="8">Tổng: {{filteredApis.length}}</td></tr></tfoot></table></div>
     </section>
    </ng-container>
+   <ng-container *ngIf="page==='reports'">
+    <div class="titlebar report-titlebar"><div><h1>Báo Cáo Động</h1><p>Thiết lập tham số và khai thác báo cáo trực tiếp từ hệ thống HIS</p></div><span class="safe-query">Chỉ truy vấn khi bấm Xem báo cáo · Tối đa 6 tháng</span></div>
+    <div class="report-layout">
+     <section class="report-workspace box" *ngIf="selectedReport;else noReports">
+      <div class="report-heading"><div><span>BÁO CÁO</span><h2>{{selectedReport.name}}</h2><p>{{selectedReport.summary}}</p></div><span class="report-status">● Sẵn sàng</span></div>
+      <form class="report-filter" (ngSubmit)="runReport()">
+       <div *ngFor="let field of selectedReport.fields">
+        <label>{{field.label||field.name}} <b *ngIf="field.required">*</b></label>
+        <input *ngIf="field.type==='date'" type="date" [(ngModel)]="reportParams[field.name]" [name]="field.name" required>
+        <select *ngIf="field.type==='department'" [(ngModel)]="reportParams[field.name]" [name]="field.name"><option value="-1">-- Tất cả khoa --</option><option *ngFor="let khoa of departments" [value]="khoa.KhoaId??khoa.KHOAID">{{khoa.TenKhoa??khoa.TENKHOA}}</option></select>
+        <small>{{field.description}}</small>
+       </div>
+       <div class="report-actions"><button type="submit" class="btn-blue" [disabled]="reportLoading||!connection">▣ {{reportLoading?'Đang tải...':'Xem báo cáo'}}</button><button type="button" class="btn-light" (click)="resetReport()">Xóa tham số</button><button type="button" class="btn-light export" [disabled]="!reportRows.length" (click)="exportReport()">⇩ Xuất CSV</button><button type="button" class="btn-light" [disabled]="!reportRows.length" (click)="exportXlsx()">▦ Xuất XLSX</button></div>
+      </form>
+      <div class="report-login-warning" *ngIf="!connection"><span>!</span><p><b>Chưa kết nối HIS</b><small>Đăng nhập để tải danh mục khoa và chạy báo cáo.</small></p><button class="btn-blue" (click)="showLogin=true">Đăng nhập HIS</button></div>
+      <div class="report-error" *ngIf="reportError">{{reportError}}</div>
+      <div class="report-result-head"><div><b>KẾT QUẢ BÁO CÁO</b><span *ngIf="reportRows.length">{{format(reportRows.length)}} bản ghi</span></div><small>Dữ liệu hiển thị theo tham số đã chọn</small></div>
+      <div class="report-table-wrap" *ngIf="reportRows.length;else reportEmpty"><table class="data-table report-table"><thead><tr><th>STT</th><th *ngFor="let column of reportColumns">{{column}}</th></tr></thead><tbody><tr *ngFor="let row of visibleReportRows;index as i"><td>{{(reportPage-1)*reportPageSize+i+1}}</td><td *ngFor="let column of reportColumns" [title]="reportValue(row,column)">{{reportValue(row,column)}}</td></tr></tbody></table></div>
+      <div class="report-pagination" *ngIf="reportRows.length"><span>Trang {{reportPage}} / {{reportPages}}</span><div><button [disabled]="reportPage===1" (click)="reportPage=reportPage-1">‹ Trước</button><button [disabled]="reportPage===reportPages" (click)="reportPage=reportPage+1">Sau ›</button></div></div>
+      <ng-template #reportEmpty><div class="report-empty"><div>▤</div><b>{{reportLoading?'Đang truy vấn dữ liệu...':'Chưa có dữ liệu báo cáo'}}</b><span>{{reportLoading?'Vui lòng chờ trong giây lát.':'Chọn tham số phía trên và bấm “Xem báo cáo”.'}}</span></div></ng-template>
+     </section>
+     <ng-template #noReports><section class="report-workspace box"><div class="report-empty"><b>Chưa có danh mục báo cáo</b></div></section></ng-template>
+    </div>
+   </ng-container>
   </main><footer>TRUNG TÂM CÔNG NGHỆ THÔNG TIN VNPT VĨNH PHÚC <span>HIS L2 Integration Gateway</span></footer>
  </div>
 </div>
-<div class="modal-backdrop" *ngIf="showLogin"><form class="modal" (ngSubmit)="connect()"><div class="modal-title"><b>ĐĂNG NHẬP HỆ THỐNG HIS</b><button type="button" [disabled]="connecting" (click)="showLogin=false">×</button></div><div class="modal-body"><label>Domain bệnh viện <b>*</b></label><input name="domain" [(ngModel)]="login.domain" placeholder="benhvien.vncare.vn" [disabled]="connecting" required><label>Tên đăng nhập <b>*</b></label><input name="username" [(ngModel)]="login.username" [disabled]="connecting" required><label>Mật khẩu <b>*</b></label><input name="password" type="password" [(ngModel)]="login.password" [disabled]="connecting" required><p class="form-error">{{loginError}}</p></div><div class="modal-actions"><button type="button" [disabled]="connecting" (click)="showLogin=false">Đóng</button><button class="btn-blue" [disabled]="connecting">{{connecting?'Đang kết nối...':'Đăng nhập'}}</button></div></form></div>
+<div class="his-login-overlay" *ngIf="showLogin"><form class="his-login-dialog" (ngSubmit)="connect()"><div class="his-login-title"><b>ĐĂNG NHẬP HỆ THỐNG HIS</b><button type="button" [disabled]="connecting" (click)="showLogin=false">×</button></div><div class="his-login-body"><label>Domain bệnh viện <b>*</b></label><input name="domain" [(ngModel)]="login.domain" placeholder="benhvien.vncare.vn" [disabled]="connecting" required><label>Tên đăng nhập <b>*</b></label><input name="username" [(ngModel)]="login.username" [disabled]="connecting" required><label>Mật khẩu <b>*</b></label><input name="password" type="password" [(ngModel)]="login.password" [disabled]="connecting" required><p class="form-error">{{loginError}}</p></div><div class="his-login-actions"><button type="button" [disabled]="connecting" (click)="showLogin=false">Đóng</button><button class="btn-blue" [disabled]="connecting">{{connecting?'Đang kết nối...':'Đăng nhập'}}</button></div></form></div>
 <div class="drawer-backdrop" *ngIf="selected" (click)="selected=undefined"></div><aside class="drawer" *ngIf="selected"><div class="drawer-title"><b>CHI TIẾT API</b><button (click)="selected=undefined">×</button></div><div class="drawer-body"><h2>{{selected.name}}</h2><p>{{selected.summary}}</p><table class="detail-table"><tr><th>Phương thức</th><td><span class="method">{{selected.method}}</span></td></tr><tr><th>Đường dẫn</th><td>{{selected.path}}</td></tr><tr><th>Trạng thái</th><td><span class="tag">{{selected.status}}</span></td></tr><tr><th>API Key</th><td>{{maskedKey}}</td></tr></table><h3>MẪU REQUEST</h3><pre>{{snippet()}}</pre><button class="btn-blue" (click)="copySnippet()">Sao chép nội dung</button></div></aside>

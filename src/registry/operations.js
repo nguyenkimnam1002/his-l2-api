@@ -4,8 +4,9 @@ const danhMucKhoa = require('../modules/danh-muc-khoa');
 const danhMucPhong = require('../modules/danh-muc-phong');
 const benhNhanTiepDonNgay = require('../modules/benh-nhan-tiep-don-ngay');
 const dichVuChiDinh = require('../modules/dich-vu-chi-dinh');
+const dynamicReports = require('../modules/dynamic-reports');
 
-const operations = [pto01, benhNhanTiepDonNgay, dichVuChiDinh, danhMucDichVu, danhMucKhoa, danhMucPhong];
+const operations = [pto01, benhNhanTiepDonNgay, dichVuChiDinh, danhMucDichVu, danhMucKhoa, danhMucPhong, ...dynamicReports.operations];
 
 function validateRegistry(items) {
   const ids = new Set();
